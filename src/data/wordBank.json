@@ -1,0 +1,57 @@
+{
+  "categories": [
+    {
+      "id": "cn_idiom",
+      "label": "成语 (Chinese idioms)",
+      "words": [
+        "守株待兔",
+        "画蛇添足",
+        "对牛弹琴",
+        "亡羊补牢",
+        "井底之蛙",
+        "狐假虎威",
+        "杯弓蛇影",
+        "刻舟求剑",
+        "掩耳盗铃",
+        "鹤立鸡群",
+        "破釜沉舟",
+        "草木皆兵",
+        "九牛一毛",
+        "雪中送炭",
+        "火上浇油"
+      ]
+    },
+    {
+      "id": "en_easy",
+      "label": "English — everyday",
+      "words": [
+        "umbrella",
+        "lighthouse",
+        "pancake",
+        "robot",
+        "volcano",
+        "jellyfish",
+        "telescope",
+        "snowman",
+        "cactus",
+        "submarine"
+      ]
+    },
+    {
+      "id": "en_weird",
+      "label": "English — chaotic",
+      "words": [
+        "narwhal",
+        "gargoyle",
+        "kraken",
+        "zeppelin",
+        "scarecrow",
+        "phoenix",
+        "tumbleweed",
+        "moonwalk",
+        "quicksand",
+        "werewolf"
+      ]
+    }
+  ]
+}
