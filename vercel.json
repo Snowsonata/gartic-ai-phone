@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/dashscope/:path*",
+      "destination": "/api/proxy/:path*"
+    }
+  ]
+}
