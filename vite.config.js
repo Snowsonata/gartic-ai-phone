@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { viteSingleFile } from 'vite-plugin-singlefile'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -8,8 +9,17 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
+    // './' ensures asset paths work when opened via file:// without a server.
+    // viteSingleFile inlines all JS and CSS directly into index.html so there
+    // are no separate chunks to load — no CORS issues when double-clicking the file.
     base: './',
-    plugins: [react()],
+    plugins: [react(), viteSingleFile()],
+    build: {
+      // viteSingleFile requires all assets to be inlined; raise the inline limit
+      // so nothing escapes into a separate file.
+      assetsInlineLimit: 100_000_000,
+      cssCodeSplit: false,
+    },
     server: {
       port: 5173,
       proxy: {
