@@ -17,23 +17,21 @@ const MODE = import.meta.env.VITE_DASHSCOPE_MODE || 'proxy'
 const MODEL = import.meta.env.VITE_DASHSCOPE_MODEL || 'wanx2.1-t2i-turbo'
 const SIZE = import.meta.env.VITE_IMAGE_SIZE || '1024*1024'
 
-// Production builds have no Vite dev proxy, so we always go direct and inject
-// the key ourselves. In dev, "proxy" mode uses a relative path so the key stays
-// server-side; "direct" mode talks to DashScope from the browser (key exposed).
-const IS_PROD = import.meta.env.PROD // true in `vite build` output, false in `vite dev`
-
-const BASE = (IS_PROD || MODE === 'direct')
-  ? 'https://dashscope.aliyuncs.com/api/v1'
-  : '/dashscope'
+// All requests go through a same-origin proxy path (/dashscope/...) so the
+// API key is never exposed in client-side code.
+//
+// In development:  Vite's dev server proxy (vite.config.js) forwards the
+//                  request to DashScope and injects Authorization.
+// In production:   Vercel serverless function (api/proxy/[...path].js)
+//                  does the same, reading DASHSCOPE_API_KEY from env vars
+//                  set in the Vercel dashboard.
+const BASE = '/dashscope'
 
 const CREATE_PATH = '/services/aigc/text2image/image-synthesis'
 const TASK_PATH = (id) => `/tasks/${id}`
 
 function authHeaders() {
-  if (!IS_PROD && MODE !== 'direct') return {} // dev-proxy mode: proxy injects the key
-  const key = import.meta.env.VITE_DASHSCOPE_API_KEY
-  if (!key) throw new Error('Missing VITE_DASHSCOPE_API_KEY — required for production builds and direct mode.')
-  return { Authorization: `Bearer ${key}` }
+  return {} // Authorization is always injected server-side by the proxy
 }
 
 const sleep = (ms, signal) =>
