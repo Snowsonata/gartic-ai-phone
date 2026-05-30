@@ -32,20 +32,13 @@ const SIZE  = import.meta.env.VITE_IMAGE_SIZE       || '1024*1024'
 // If you see requests going to /dashscope on the production site it means
 // VITE_ECS_PROXY_URL was empty at build time — check repo secrets and
 // re-run the workflow.
-const ECS_BASE = import.meta.env.VITE_ECS_PROXY_URL  // e.g. 'http://8.162.5.134:3000'
-const IS_PROD  = import.meta.env.PROD                 // true in vite build output
+// Hardcoded fallback — the live ECS proxy. Used when VITE_ECS_PROXY_URL
+// is not injected at build time (e.g. a local `npm run build` without the
+// GitHub Actions secret, or double-clicking dist/index.html via file://).
+const FALLBACK_ECS = 'http://8.162.5.134:3000'
 
-if (IS_PROD && !ECS_BASE) {
-  // Surface a loud, visible error in the browser console so a misconfigured
-  // production deploy is immediately obvious rather than silently 405-ing.
-  console.error(
-    '[dashscope] VITE_ECS_PROXY_URL is not set in this build.\n' +
-    'Requests will hit /dashscope on the GitHub Pages host and fail with 405.\n' +
-    'Fix: add VITE_ECS_PROXY_URL as a GitHub Actions secret and redeploy.'
-  )
-}
-
-const BASE = ECS_BASE ? `${ECS_BASE}/dashscope` : '/dashscope'
+const ECS_BASE = import.meta.env.VITE_ECS_PROXY_URL || FALLBACK_ECS
+const BASE     = `${ECS_BASE}/dashscope`
 
 const CREATE_PATH = '/services/aigc/text2image/image-synthesis'
 const TASK_PATH   = (id) => `/tasks/${id}`
