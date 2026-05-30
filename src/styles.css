@@ -148,7 +148,7 @@ body::after {
 
 /* ---- Cards / panels ---- */
 .card {
-  background: var(--card);
+  background: #FAEEC0;
   border: 2.5px solid var(--ink);
   border-radius: var(--r);
   box-shadow: var(--shadow-hard);
@@ -261,8 +261,7 @@ textarea { resize: vertical; min-height: 110px; line-height: 1.5; }
   position: fixed; inset: 0; z-index: 200;
   display: grid; place-items: center;
   background: var(--ink);
-  background-image:
-    repeating-linear-gradient(45deg, rgba(31,76,255,.18) 0 18px, transparent 18px 36px);
+  
 }
 .pass-inner { text-align: center; color: var(--paper); padding: 30px; max-width: 460px; }
 .pass-eyebrow { font-family: var(--font-mono); letter-spacing: .3em; font-size: 12px; color: var(--blue-bright); margin-bottom: 16px; }
