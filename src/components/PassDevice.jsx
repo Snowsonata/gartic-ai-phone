@@ -16,7 +16,7 @@ export default function PassDevice({ role, name, note, children }) {
   return (
     <div className="pass">
       <div className="pass-inner">
-        <div className="pass-eyebrow">PASS THE DEVICE TO</div>
+        <div className="pass-eyebrow">传递给——</div>
         <div className={`tag ${ROLE_TAG[role]}`} style={{
           width: 56, height: 56, margin: '0 auto 18px', borderRadius: '50%',
           display: 'grid', placeItems: 'center', fontFamily: 'var(--font-display)',
@@ -27,10 +27,10 @@ export default function PassDevice({ role, name, note, children }) {
           {role}
         </div>
         <h1 className="pass-name">{name || `Player ${role}`}</h1>
-        <div className="pass-role">PLAYER {role}</div>
+        <div className="pass-role">玩家 {role}</div>
         <p className="pass-note">{note}</p>
         <button className="btn primary" onClick={() => setReady(true)}>
-          I'm {name || `Player ${role}`} — start my turn
+          我是 {name || `Player ${role}`} — 开始我的回合 →
         </button>
       </div>
     </div>

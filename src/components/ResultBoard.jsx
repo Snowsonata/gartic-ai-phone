@@ -36,10 +36,10 @@ export default function ResultBoard({ state, isCorrect, onReset }) {
     <div>
       <div className="verdict reveal">
         <div className={`badge ${isCorrect ? 'win' : 'lose'}`}>
-          {isCorrect ? 'NAILED IT! 🎯' : 'NOT QUITE 😵'}
+          {isCorrect ? '正中靶心! 🎯' : '失之交臂 😵'}
         </div>
         <p>
-          {players.D || 'Player D'} guessed <b>“{guessD}”</b> · the secret word was{' '}
+          {players.D || 'Player D'} 所猜测的是 <b>“{guessD}”</b> · 神秘小词汇是 {' '}
           <b>“{targetWord}”</b>
         </p>
       </div>
@@ -81,7 +81,7 @@ export default function ResultBoard({ state, isCorrect, onReset }) {
       </Step>
 
       <div className="btn-row" style={{ justifyContent: 'center', marginTop: 30 }}>
-        <button className="btn primary" onClick={onReset}>Play again ↺</button>
+        <button className="btn primary" onClick={onReset}>再来一局 ↺</button>
       </div>
     </div>
   )

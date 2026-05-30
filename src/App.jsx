@@ -53,14 +53,14 @@ export default function App() {
   const onSubmitD = useCallback((guessD) => dispatch({ type: 'SUBMIT_D', guessD }), [dispatch])
 
   // The current AI-stage label for the loading overlay.
-  const loadingLabel = phase === PHASES.STAGE_A ? 'Generating Image A' : 'Generating Image C'
+  const loadingLabel = phase === PHASES.STAGE_A ? '生成图片 A' : '生成图片 C'
 
   return (
     <div className="app-shell">
       <header className="brandbar">
         <div className="brand">
           RELAY<span className="dot">.</span>
-          <small>AI TELEPHONE · PASS &amp; PLAY</small>
+          <small>AI 你画 &amp; 我猜</small>
         </div>
         {phase !== PHASES.LOBBY && (
           <button className="btn ghost sm" onClick={reset}>Quit</button>

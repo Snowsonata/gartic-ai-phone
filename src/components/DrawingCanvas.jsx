@@ -108,7 +108,7 @@ const DrawingCanvas = forwardRef(function DrawingCanvas(_props, ref) {
         </div>
 
         <div className="tool">
-          <span>SIZE</span>
+          <span>粗细</span>
           {SIZES.map((s) => (
             <button
               key={s}
@@ -124,9 +124,9 @@ const DrawingCanvas = forwardRef(function DrawingCanvas(_props, ref) {
           className={`tool-btn ${eraser ? 'on' : ''}`}
           onClick={() => setEraser((v) => !v)}
         >
-          ⌫ Eraser
+          ⌫ 橡皮擦
         </button>
-        <button className="tool-btn" onClick={clear}>↺ Clear</button>
+        <button className="tool-btn" onClick={clear}>↺ 清空</button>
       </div>
 
       <div className="canvas-wrap">

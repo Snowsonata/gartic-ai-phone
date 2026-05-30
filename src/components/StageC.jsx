@@ -9,14 +9,13 @@ export default function StageC({ playerName, imageB, onSubmit }) {
     <PassDevice
       role="C"
       name={playerName}
-      note="You'll see a hand drawing. Describe what you think it shows in plain words. The AI will then draw YOUR description."
+      note="你会看到一幅手绘图片。用简单的语言描述你认为它画的是什么。AI将会根据你的描述生成一张新的图片。"
     >
       <div className="card blue reveal">
-        <p className="eyebrow">Stage 3 · Describe the drawing</p>
-        <h1 className="title-xl">What is this, exactly?</h1>
+        <p className="eyebrow">第三阶段：再回想</p>
+        <h1 className="title-xl">你觉得这是何物</h1>
         <p className="lead">
-          Look at the drawing and describe it as a text-to-image prompt. Whatever you
-          write becomes the next AI image — so be vivid.
+          你的描述将传递给ai再次生成图片，最后一位玩家将根据这张图猜出最初的词语是什么，仔细观察，发挥想象，写下你的描述吧
         </p>
 
         <div className="split">
@@ -27,13 +26,13 @@ export default function StageC({ playerName, imageB, onSubmit }) {
           <div>
             <label className="field">
               <span>
-                Your description / prompt
+                你的描述：
                 <i className="counter">{desc.length}/300</i>
               </span>
               <textarea
                 value={desc}
                 maxLength={300}
-                placeholder="e.g. a fluffy orange animal balancing on a fence at sunset…"
+                placeholder="自行发挥…"
                 onChange={(e) => setDesc(e.target.value)}
                 style={{ minHeight: 220 }}
               />
@@ -43,7 +42,7 @@ export default function StageC({ playerName, imageB, onSubmit }) {
 
         <div className="btn-row">
           <button className="btn primary" disabled={!valid} onClick={() => onSubmit(desc.trim())}>
-            Generate Image C →
+            生成图片 →
           </button>
         </div>
       </div>

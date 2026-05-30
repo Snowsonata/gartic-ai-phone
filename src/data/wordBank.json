@@ -2,28 +2,44 @@
   "categories": [
     {
       "id": "cn_idiom",
-      "label": "成语 (Chinese idioms)",
+      "label": "成语",
       "words": [
         "守株待兔",
         "画蛇添足",
-        "对牛弹琴",
-        "亡羊补牢",
-        "井底之蛙",
         "狐假虎威",
         "杯弓蛇影",
         "刻舟求剑",
-        "掩耳盗铃",
         "鹤立鸡群",
         "破釜沉舟",
         "草木皆兵",
         "九牛一毛",
         "雪中送炭",
-        "火上浇油"
+        "火上浇油",
+        "望梅止渴",
+        "自相矛盾",
+        "指鹿为马",
+        "骑虎难下",
+        "纸上谈兵",
+        "一箭双雕",
+        "三人成虎",
+        "东施效颦",
+        "愚公移山",
+        "画蛇添足",
+        "对牛弹琴",
+        "亡羊补牢",
+        "后羿射日",
+        "孟母三迁",
+        "闻鸡起舞",
+        "夜郎自大",
+        "杞人忧天",
+        "掩耳盗铃",
+        "井底之蛙",
+        "夸父追日"
       ]
     },
     {
       "id": "en_easy",
-      "label": "English — everyday",
+      "label": "日常词汇",
       "words": [
         "umbrella",
         "lighthouse",
@@ -34,12 +50,26 @@
         "telescope",
         "snowman",
         "cactus",
-        "submarine"
+        "submarine",
+        "fireworks",
+        "hotdog",
+        "spaceship",
+        "waterfall",
+        "rainbow",
+        "butterfly",
+        "giraffe",
+        "sailboat",
+        "moon",
+        "bottle",
+        "camera",
+        "bicycle",
+        "guitar",
+        "washing machine"
       ]
     },
     {
       "id": "en_weird",
-      "label": "English — chaotic",
+      "label": "趣味词汇",
       "words": [
         "narwhal",
         "gargoyle",
@@ -48,9 +78,13 @@
         "scarecrow",
         "phoenix",
         "tumbleweed",
-        "moonwalk",
         "quicksand",
-        "werewolf"
+        "werewolf",
+        "tsuchinoko",
+        "popobawa",
+        "sasabonsam",
+        "ningen",
+        "epeolatry"
       ]
     }
   ]

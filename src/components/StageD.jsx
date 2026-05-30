@@ -9,14 +9,13 @@ export default function StageD({ playerName, imageC, onSubmit }) {
     <PassDevice
       role="D"
       name={playerName}
-      note="You'll see ONE AI image. Guess the original secret word that started the whole chain. No pressure."
+      note="你会看到一张AI生成的图片。猜猜最初的那个神秘词汇是什么。不用有压力。"
     >
       <div className="card reveal">
-        <p className="eyebrow">Stage 4 · Final guess</p>
-        <h1 className="title-xl">What was the original word?</h1>
+        <p className="eyebrow">第四阶段：最终幻想</p>
+        <h1 className="title-xl">答案是什么？</h1>
         <p className="lead">
-          This image is the end of a long game of telephone. Work backwards and guess
-          the word that started it all.
+          最终版本的图像，仔细观察，得出最终答案
         </p>
 
         <div style={{ display: 'grid', placeItems: 'center', marginBottom: 18 }}>
@@ -29,11 +28,11 @@ export default function StageD({ playerName, imageC, onSubmit }) {
         </div>
 
         <label className="field">
-          <span>Your guess</span>
+          <span>你的猜测</span>
           <input
             type="text"
             value={guess}
-            placeholder="Type the original word or idiom…"
+            placeholder="输入最初的词语或成语…"
             onChange={(e) => setGuess(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter' && valid) onSubmit(guess.trim()) }}
           />
@@ -41,7 +40,7 @@ export default function StageD({ playerName, imageC, onSubmit }) {
 
         <div className="btn-row">
           <button className="btn primary" disabled={!valid} onClick={() => onSubmit(guess.trim())}>
-            Lock in guess & reveal →
+            确定答案
           </button>
         </div>
       </div>

@@ -8,7 +8,7 @@ export default function StageB({ playerName, imageA, onSubmit }) {
 
   const submit = () => {
     if (canvasRef.current.isBlank()) {
-      setWarn('The canvas is empty — draw something first!')
+      setWarn('画布是空的哦，请至少画一点什么再提交~')
       return
     }
     const dataURL = canvasRef.current.exportPNG() // Base64 (Image b)
@@ -19,23 +19,22 @@ export default function StageB({ playerName, imageA, onSubmit }) {
     <PassDevice
       role="B"
       name={playerName}
-      note="On the left you'll see an AI image. Re-draw it by hand on the right. No words — just your best copy. Then submit."
+      note="你会看到AI生成的图片，并在旁边的画布上用手绘方式尽可能复现它。细节不重要，发挥想象，画出你的版本吧"
     >
       <div className="card reveal">
-        <p className="eyebrow">Stage 2 · Trace it by hand</p>
-        <h1 className="title-xl">Copy the image. By hand.</h1>
+        <p className="eyebrow">第二阶段：手绘复制</p>
+        <h1 className="title-xl">尽你所能复现图片</h1>
         <p className="lead">
-          Study the picture and redraw it on the board. It does not need to be good —
-          chaos is the point.
+          观察AI生成的图片，并在旁边的画布上用手绘方式尽可能复现它。细节不重要，发挥想象，画出你的版本吧
         </p>
 
         <div className="split">
           <div>
-            <div className="hint" style={{ marginBottom: 8 }}>REFERENCE — IMAGE A</div>
+            <div className="hint" style={{ marginBottom: 8 }}>复现</div>
             <img className="pane-img" src={imageA} alt="AI-generated reference" />
           </div>
           <div>
-            <div className="hint" style={{ marginBottom: 8 }}>YOUR DRAWING</div>
+            <div className="hint" style={{ marginBottom: 8 }}>你的画作</div>
             <DrawingCanvas ref={canvasRef} />
           </div>
         </div>
@@ -43,7 +42,7 @@ export default function StageB({ playerName, imageA, onSubmit }) {
         {warn && <div className="err">{warn}</div>}
 
         <div className="btn-row">
-          <button className="btn primary" onClick={submit}>Submit drawing →</button>
+          <button className="btn primary" onClick={submit}>提交画作 →</button>
         </div>
       </div>
     </PassDevice>
