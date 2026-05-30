@@ -38,14 +38,27 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
 // ── CORS ────────────────────────────────────────────────────────────
-// Restrict to your GitHub Pages origin in production via CORS_ORIGIN.
+// Three origin categories:
+//   1. Configured origin (GitHub Pages URL)  → reflect it back exactly
+//   2. null  — browsers send this for file:// double-click loads;
+//              the spec forbids using 'null' as Allow-Origin so we
+//              respond with '*' instead, which the browser accepts
+//              when credentials are omitted (which the client does).
+//   3. No Origin header (curl / server-to-server) → '*'
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin',  CORS_ORIGIN)
+  const reqOrigin  = req.headers.origin          // string | undefined
+  const isNullOrigin = !reqOrigin || reqOrigin === 'null'
+
+  const allowOrigin = isNullOrigin
+    ? '*'                                         // file:// and no-origin callers
+    : reqOrigin === CORS_ORIGIN
+      ? reqOrigin                                 // known web origin → reflect exactly
+      : CORS_ORIGIN                               // unknown origin → send configured value
+
+  res.setHeader('Access-Control-Allow-Origin',  allowOrigin)
+  res.setHeader('Vary', 'Origin')                 // tell caches this header varies
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Content-Type, X-DashScope-Async',
-  )
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-DashScope-Async')
   if (req.method === 'OPTIONS') return res.sendStatus(204)
   next()
 })
@@ -68,9 +81,11 @@ app.use('/dashscope', async (req, res) => {
   const headers = {
     'Content-Type':  'application/json',
     'Authorization': `Bearer ${KEY}`,
-  }
-  if (req.headers['x-dashscope-async']) {
-    headers['X-DashScope-Async'] = req.headers['x-dashscope-async']
+    // Always inject for POST so the client never needs to send this header.
+    // Sending it on GETs is harmless — DashScope ignores it there.
+    // Keeping it server-side means the browser preflight only needs to
+    // negotiate Content-Type, not an additional custom header.
+    'X-DashScope-Async': 'enable',
   }
 
   const fetchOptions = {

@@ -83,11 +83,18 @@ export async function generateImage(prompt, opts = {}) {
   onStatus?.('CREATING')
   const createRes = await fetch(`${BASE}${CREATE_PATH}`, {
     method: 'POST',
+    mode: 'cors',
+    // 'omit' is required when the server responds with Access-Control-Allow-Origin: *
+    // (which it does for file:// null-origin requests). 'include' + '*' is blocked
+    // by the browser spec.
+    credentials: 'omit',
     signal,
     headers: {
       'Content-Type': 'application/json',
-      'X-DashScope-Async': 'enable', // REQUIRED to run text2image asynchronously
-      ...authHeaders(),
+      // X-DashScope-Async is now always injected by the ECS proxy before
+      // forwarding to DashScope — keeping it off the client avoids it
+      // appearing in the CORS preflight's Access-Control-Request-Headers,
+      // which simplifies the null-origin preflight negotiation.
     },
     body: JSON.stringify({
       model: MODEL,
@@ -144,8 +151,9 @@ export async function generateImage(prompt, opts = {}) {
 
     const pollRes = await fetch(`${BASE}${TASK_PATH(taskId)}`, {
       method: 'GET',
+      mode: 'cors',
+      credentials: 'omit',
       signal,
-      headers: { ...authHeaders() },
     })
 
     if (!pollRes.ok) {
