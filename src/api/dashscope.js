@@ -18,21 +18,34 @@ const SIZE  = import.meta.env.VITE_IMAGE_SIZE       || '1024*1024'
 
 // BASE switches automatically between environments:
 //
-//   Local dev (npm run dev):
+//   Local dev  (npm run dev):
 //     VITE_ECS_PROXY_URL is unset → BASE = '/dashscope'
 //     Vite's dev-server proxy (vite.config.js) intercepts /dashscope/*,
-//     forwards to DashScope, and injects the key from your local .env.
+//     forwards to DashScope, and injects the API key from your local .env.
 //
-//   GitHub Pages build (npm run build in CI):
-//     VITE_ECS_PROXY_URL is set via GitHub Actions secret, e.g.:
-//       http://1.2.3.4:3000
-//     BASE = 'http://1.2.3.4:3000/dashscope'
-//     The built JS calls your ECS proxy directly (absolute URL, no proxy).
+//   Production (npm run build / GitHub Actions):
+//     VITE_ECS_PROXY_URL must be set as a GitHub repo secret, e.g.:
+//       http://8.162.5.134:3000
+//     BASE = 'http://8.162.5.134:3000/dashscope'
+//     The compiled JS calls the ECS proxy directly via absolute URL.
 //
-// Set VITE_ECS_PROXY_URL in GitHub → Settings → Secrets and variables →
-// Actions, then reference it in .github/workflows/deploy.yml.
-const ECS_BASE = import.meta.env.VITE_ECS_PROXY_URL
-const BASE     = ECS_BASE ? `${ECS_BASE}/dashscope` : '/dashscope'
+// If you see requests going to /dashscope on the production site it means
+// VITE_ECS_PROXY_URL was empty at build time — check repo secrets and
+// re-run the workflow.
+const ECS_BASE = import.meta.env.VITE_ECS_PROXY_URL  // e.g. 'http://8.162.5.134:3000'
+const IS_PROD  = import.meta.env.PROD                 // true in vite build output
+
+if (IS_PROD && !ECS_BASE) {
+  // Surface a loud, visible error in the browser console so a misconfigured
+  // production deploy is immediately obvious rather than silently 405-ing.
+  console.error(
+    '[dashscope] VITE_ECS_PROXY_URL is not set in this build.\n' +
+    'Requests will hit /dashscope on the GitHub Pages host and fail with 405.\n' +
+    'Fix: add VITE_ECS_PROXY_URL as a GitHub Actions secret and redeploy.'
+  )
+}
+
+const BASE = ECS_BASE ? `${ECS_BASE}/dashscope` : '/dashscope'
 
 const CREATE_PATH = '/services/aigc/text2image/image-synthesis'
 const TASK_PATH   = (id) => `/tasks/${id}`

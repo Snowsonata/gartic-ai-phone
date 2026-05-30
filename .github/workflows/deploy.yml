@@ -3,9 +3,8 @@ name: Build and Deploy to GitHub Pages
 on:
   push:
     branches: [master]
-  workflow_dispatch: # allow manual runs from the Actions tab
+  workflow_dispatch:
 
-# Allow the workflow to push to the gh-pages branch
 permissions:
   contents: write
 
@@ -14,45 +13,86 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ── 1. Checkout ──────────────────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Setup Node ────────────────────────────────────────────
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      # ── 3. Install dependencies ──────────────────────────────────
       - name: Install dependencies
         run: npm ci
 
-      # ── 4. Build ─────────────────────────────────────────────────
-      # VITE_ECS_PROXY_URL is injected here from a GitHub Actions secret
-      # so the compiled JS targets your ECS proxy instead of a relative path.
-      #
-      # How to set the secret:
-      #   GitHub → repo Settings → Secrets and variables → Actions
-      #   → New repository secret
-      #   Name:  VITE_ECS_PROXY_URL
-      #   Value: http://<your-ECS-public-IP>:3000
+      # ── Validate required secret ──────────────────────────────────────
+      # Fail the build immediately if the secret is missing or empty.
+      # Without this check, an unset secret silently produces '' which
+      # Vite bakes into the bundle as a falsy value, causing the frontend
+      # to fall back to /dashscope and hit GitHub Pages with a 405.
+      - name: Validate VITE_ECS_PROXY_URL secret
+        run: |
+          if [ -z "$VITE_ECS_PROXY_URL" ]; then
+            echo "::error::VITE_ECS_PROXY_URL secret is not set or is empty."
+            echo "::error::Go to: repo Settings → Secrets and variables → Actions → New repository secret"
+            echo "::error::Name: VITE_ECS_PROXY_URL   Value: http://8.162.5.134:3000"
+            exit 1
+          fi
+          echo "::notice::VITE_ECS_PROXY_URL is set (${#VITE_ECS_PROXY_URL} chars)"
+        env:
+          VITE_ECS_PROXY_URL: ${{ secrets.VITE_ECS_PROXY_URL }}
+
+      # ── Write .env.production ─────────────────────────────────────────
+      # Vite unconditionally reads .env.production during `vite build`.
+      # Writing the file here is the most reliable injection method —
+      # it works regardless of how the runner handles env: context.
+      # This is belt-and-suspenders alongside the env: block on the
+      # build step below.
+      - name: Write .env.production
+        run: |
+          cat > .env.production << EOF
+          VITE_ECS_PROXY_URL=${{ secrets.VITE_ECS_PROXY_URL }}
+          VITE_DASHSCOPE_MODEL=wanx2.1-t2i-turbo
+          VITE_IMAGE_SIZE=1024*1024
+          EOF
+          echo "::notice::.env.production written successfully"
+
+      # ── Build ─────────────────────────────────────────────────────────
+      # env: here is the second injection path. Both this AND the
+      # .env.production file must agree — if either is wrong we catch it
+      # in the verification step below.
       - name: Build Vite app
         run: npm run build
         env:
           VITE_ECS_PROXY_URL: ${{ secrets.VITE_ECS_PROXY_URL }}
-          VITE_DASHSCOPE_MODEL: ${{ vars.VITE_DASHSCOPE_MODEL || 'wanx2.1-t2i-turbo' }}
-          VITE_IMAGE_SIZE: ${{ vars.VITE_IMAGE_SIZE || '1024*1024' }}
+          VITE_DASHSCOPE_MODEL: wanx2.1-t2i-turbo
+          VITE_IMAGE_SIZE: 1024*1024
 
-      # ── 5. Deploy to GitHub Pages ─────────────────────────────────
-      # Pushes the contents of dist/ to the gh-pages branch.
-      # GitHub Pages must be configured to serve from that branch:
-      #   repo Settings → Pages → Source → Deploy from branch → gh-pages / (root)
+      # ── Verify bundle contains the ECS URL ───────────────────────────
+      # Grep the compiled JS for the ECS IP. If it is missing the build
+      # is broken and we stop here rather than deploying a bad bundle.
+      - name: Verify ECS URL was baked into bundle
+        run: |
+          # Extract just the host:port from the secret to search for
+          # (avoids printing the full secret in logs)
+          ECS_HOST=$(echo "$VITE_ECS_PROXY_URL" | sed 's|http://||' | sed 's|https://||')
+          echo "Searching bundle for: $ECS_HOST"
+          if ! grep -r "$ECS_HOST" dist/assets/ --include="*.js" -l; then
+            echo "::error::ECS URL was NOT found in the compiled bundle."
+            echo "::error::The build probably fell back to /dashscope."
+            echo "::error::Check that VITE_ECS_PROXY_URL is saved correctly in repo secrets."
+            exit 1
+          fi
+          echo "::notice::ECS URL confirmed in bundle ✓"
+        env:
+          VITE_ECS_PROXY_URL: ${{ secrets.VITE_ECS_PROXY_URL }}
+
+      # ── Deploy to GitHub Pages ────────────────────────────────────────
+      # Only runs if all previous steps pass — the bundle is verified
+      # before a single byte is pushed to gh-pages.
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
-          # Keeps deployment history clean — each push is a fresh deploy
           force_orphan: true
