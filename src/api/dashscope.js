@@ -13,25 +13,32 @@
 //  Result URLs are valid for 24h — fine for a single local game session.
 // =====================================================================
 
-const MODE = import.meta.env.VITE_DASHSCOPE_MODE || 'proxy'
 const MODEL = import.meta.env.VITE_DASHSCOPE_MODEL || 'wanx2.1-t2i-turbo'
-const SIZE = import.meta.env.VITE_IMAGE_SIZE || '1024*1024'
+const SIZE  = import.meta.env.VITE_IMAGE_SIZE       || '1024*1024'
 
-// All requests go through a same-origin proxy path (/dashscope/...) so the
-// API key is never exposed in client-side code.
+// BASE switches automatically between environments:
 //
-// In development:  Vite's dev server proxy (vite.config.js) forwards the
-//                  request to DashScope and injects Authorization.
-// In production:   Vercel serverless function (api/proxy/[...path].js)
-//                  does the same, reading DASHSCOPE_API_KEY from env vars
-//                  set in the Vercel dashboard.
-const BASE = '/dashscope'
+//   Local dev (npm run dev):
+//     VITE_ECS_PROXY_URL is unset → BASE = '/dashscope'
+//     Vite's dev-server proxy (vite.config.js) intercepts /dashscope/*,
+//     forwards to DashScope, and injects the key from your local .env.
+//
+//   GitHub Pages build (npm run build in CI):
+//     VITE_ECS_PROXY_URL is set via GitHub Actions secret, e.g.:
+//       http://1.2.3.4:3000
+//     BASE = 'http://1.2.3.4:3000/dashscope'
+//     The built JS calls your ECS proxy directly (absolute URL, no proxy).
+//
+// Set VITE_ECS_PROXY_URL in GitHub → Settings → Secrets and variables →
+// Actions, then reference it in .github/workflows/deploy.yml.
+const ECS_BASE = import.meta.env.VITE_ECS_PROXY_URL
+const BASE     = ECS_BASE ? `${ECS_BASE}/dashscope` : '/dashscope'
 
 const CREATE_PATH = '/services/aigc/text2image/image-synthesis'
-const TASK_PATH = (id) => `/tasks/${id}`
+const TASK_PATH   = (id) => `/tasks/${id}`
 
 function authHeaders() {
-  return {} // Authorization is always injected server-side by the proxy
+  return {} // Authorization is always injected server-side by the ECS proxy
 }
 
 const sleep = (ms, signal) =>
