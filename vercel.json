@@ -3,6 +3,10 @@
     {
       "source": "/dashscope/:path*",
       "destination": "/api/proxy/:path*"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ]
 }
