@@ -1,0 +1,58 @@
+name: Build and Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch: # allow manual runs from the Actions tab
+
+# Allow the workflow to push to the gh-pages branch
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout ──────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Setup Node ────────────────────────────────────────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # ── 3. Install dependencies ──────────────────────────────────
+      - name: Install dependencies
+        run: npm ci
+
+      # ── 4. Build ─────────────────────────────────────────────────
+      # VITE_ECS_PROXY_URL is injected here from a GitHub Actions secret
+      # so the compiled JS targets your ECS proxy instead of a relative path.
+      #
+      # How to set the secret:
+      #   GitHub → repo Settings → Secrets and variables → Actions
+      #   → New repository secret
+      #   Name:  VITE_ECS_PROXY_URL
+      #   Value: http://<your-ECS-public-IP>:3000
+      - name: Build Vite app
+        run: npm run build
+        env:
+          VITE_ECS_PROXY_URL: ${{ secrets.VITE_ECS_PROXY_URL }}
+          VITE_DASHSCOPE_MODEL: ${{ vars.VITE_DASHSCOPE_MODEL || 'wanx2.1-t2i-turbo' }}
+          VITE_IMAGE_SIZE: ${{ vars.VITE_IMAGE_SIZE || '1024*1024' }}
+
+      # ── 5. Deploy to GitHub Pages ─────────────────────────────────
+      # Pushes the contents of dist/ to the gh-pages branch.
+      # GitHub Pages must be configured to serve from that branch:
+      #   repo Settings → Pages → Source → Deploy from branch → gh-pages / (root)
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          # Keeps deployment history clean — each push is a fresh deploy
+          force_orphan: true
