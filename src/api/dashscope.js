@@ -118,6 +118,33 @@ export async function generateImage(prompt, opts = {}) {
   }
 
   // ---- 2) Poll the task until it finishes ----------------------------
+  //
+  // resolveStatus / resolveUrl defensively walk every response shape we
+  // have observed from the ECS proxy so a structural mismatch never
+  // silently keeps the spinner spinning forever:
+  //
+  //   Direct DashScope shape  → data.output.task_status
+  //   Axios-wrapped shape     → data.data.output.task_status
+  //   Flat/unexpected shape   → data.task_status
+  //
+  function resolveStatus(data) {
+    return (
+      data?.output?.task_status   ??   // standard DashScope shape
+      data?.data?.output?.task_status ??  // axios-wrapped shape
+      data?.task_status           ??   // flat / unexpected shape
+      null
+    )
+  }
+
+  function resolveUrl(data) {
+    return (
+      data?.output?.results?.[0]?.url         ??
+      data?.data?.output?.results?.[0]?.url   ??
+      data?.results?.[0]?.url                 ??
+      null
+    )
+  }
+
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     await sleep(pollMs, signal)
@@ -134,18 +161,34 @@ export async function generateImage(prompt, opts = {}) {
     }
 
     const data = await pollRes.json()
-    const status = data?.output?.task_status
+
+    // ── Inspect this in DevTools → Console to verify the shape ──────
+    console.log('[DashScope Poll Response]:', data)
+
+    const status = resolveStatus(data)
+    console.log('[DashScope Poll Status]:', status)
+
     onStatus?.(status)
 
     if (status === 'SUCCEEDED') {
-      const url = data?.output?.results?.[0]?.url
+      const url = resolveUrl(data)
       if (!url) throw new Error('Task succeeded but no image URL was returned.')
       return url
     }
     if (status === 'FAILED' || status === 'CANCELED' || status === 'UNKNOWN') {
-      throw new Error(`Image task ${status}: ${data?.output?.message || 'no detail'}`)
+      const msg =
+        data?.output?.message ??
+        data?.data?.output?.message ??
+        data?.message ??
+        'no detail'
+      throw new Error(`Image task ${status}: ${msg}`)
     }
-    // PENDING / RUNNING -> keep polling
+    if (status === null) {
+      // The response parsed fine but the status field was not found at
+      // any expected path. Log the full shape so it is visible in DevTools.
+      console.warn('[DashScope] Could not resolve task_status from response:', JSON.stringify(data, null, 2))
+    }
+    // PENDING / RUNNING / null → keep polling
   }
 
   throw new Error('Image generation timed out.')
