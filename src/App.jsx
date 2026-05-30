@@ -112,7 +112,7 @@ export default function App() {
           <div className="err" style={{ marginTop: 0 }}>⚠ {error}</div>
           <div className="btn-row">
             <button className="btn coral sm" onClick={() => dispatch({ type: 'SET_ERROR', error: null })}>
-              Dismiss
+              取消
             </button>
           </div>
         </div>
