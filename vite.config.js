@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { viteSingleFile } from 'vite-plugin-singlefile'
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -9,12 +10,21 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   return {
-    // Must match your GitHub repository name so asset paths resolve
-    // correctly on https://<user>.github.io/<repo>/
-    // For local dev and file:// this is overridden by the dev server.
-    base: '/gartic-ai-phone/',
+    // './' produces relative asset paths so the built index.html works
+    // when opened via file:// by double-clicking (no server needed).
+    // viteSingleFile inlines all JS + CSS into index.html anyway, so
+    // there are no separate chunk files to reference.
+    base: './',
 
-    plugins: [react()],
+    plugins: [react(), viteSingleFile()],
+
+    build: {
+      // Force every asset to be inlined regardless of size.
+      // viteSingleFile needs this to guarantee nothing escapes into
+      // a separate file that file:// can't load cross-origin.
+      assetsInlineLimit: 100_000_000,
+      cssCodeSplit: false,
+    },
 
     server: {
       port: 5173,
